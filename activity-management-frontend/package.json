@@ -6,13 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generateOpenApi": "openapi-generator-cli -i ./../openapi.yaml"
   },
   "dependencies": {
-    "vue": "^3.5.24"
+    "@fontsource/roboto": "^5.2.9",
+    "@openapitools/openapi-generator-cli": "^2.27.0",
+    "vue": "^3.5.24",
+    "vuetify": "^3.11.6"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",
+    "unplugin-fonts": "^1.4.0",
     "vite": "^7.2.4"
   }
 }

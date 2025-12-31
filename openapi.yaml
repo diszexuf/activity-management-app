@@ -1,0 +1,189 @@
+openapi: 3.0.0
+info:
+  title: API для управления рабочими активностями
+  version: 1.0.0
+servers:
+  - description: API для управления активностями в течение суток
+    url: http://localhost:8080/api
+tags:
+  - name: intervals
+    description: Операции с временными интервалами
+paths:
+  /intervals:
+    get:
+      tags:
+        - intervals
+      description: Возвращает список всех сохраненных временных интервалов
+      summary: Получение списка всех сохраненных интервалов
+      operationId: getAllIntervals
+      responses:
+        '200':
+          description: Успешное получение списка интервалов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntervalsListResponse'
+              example:
+                - id: 1
+                  start: 20000
+                  end: 22000
+                  type: BREAK
+                  createdAt: "2025-12-30T00:00:00Z"
+                - id: 2
+                  start: 30000
+                  end: 32000
+                  type: WORK
+                  createdAt: "2025-12-30T02:00:00Z"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - intervals
+      description: Добавляет новый временной интервал, проверяя отсутствие пересечений с существующими интервалами
+      summary: Добавление нового интервала
+      operationId: createInterval
+      requestBody:
+        required: true
+        description: Данные для создания нового интервала
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIntervalRequest'
+            example:
+              start: 0
+              end: 1000
+              type: WORK
+      responses:
+        '201':
+          description: Временной интервал успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntervalResponse'
+              example:
+                id: "a81bc81b-dead-4e5d-abff-90865d1e13b1"
+                start: 28000
+                end: 30000
+                type: BREAK
+                createdAt: "2025-12-30T00:00:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  schemas:
+    ActivityType:
+      description: |
+        Тип активности
+        *WORK* - Работа
+        *BREAK* - Перерыв
+      type: string
+      enum: [ WORK, BREAK ]
+      example: WORK
+    CreateIntervalRequest:
+      type: object
+      properties:
+        start:
+          type: integer
+          minimum: 0
+          maximum: 86400
+          description: Начало временного интервала в секундах
+          example: 12670
+        end:
+          type: integer
+          minimum: 0
+          maximum: 86400
+          description: Конец временного интервала в секундах
+          example: 36670
+        type:
+          $ref: '#/components/schemas/ActivityType'
+      required: [start, end, type]
+    IntervalResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор временного интервала
+          example: "a81bc81b-dead-4e5d-abff-90865d1e13b1"
+        start:
+          type: integer
+          minimum: 0
+          maximum: 86400
+          description: Начало временного интервала
+          example: 12000
+        end:
+          type: integer
+          minimum: 0
+          maximum: 86400
+          description: Конец временного интервала
+          example: 20000
+        type:
+          $ref: '#/components/schemas/ActivityType'
+        createdAt:
+          type: string
+          format: date-time
+          description: Время создания записи
+          example: "2025-12-30T00:00:00Z"
+      required: [id, start, end, type, createdAt]
+    IntervalsListResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/IntervalResponse'
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Код ошибки
+          example: INTERVAL_OVERLAP
+        message:
+          type: string
+          description: Описание ошибки
+          example: "Интервал пересекается с уже существующим: 00:00:00-01:00:00"
+        timestamp:
+          type: string
+          description: "Время возникновения ошибки"
+          example: "2025-12-30T00:00:00Z"
+      required: [error, message, timestamp]
+  responses:
+    BadRequest:
+      description: Невалидные данные запроса
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation_error:
+              summary: Ошибка валидации
+              value:
+                error: VALIDATION_ERROR
+                message: "start должен быть меньше end"
+                timestamp: "2025-12-31T10:15:30Z"
+            invalid_range:
+              summary: Выход за пределы диапазона
+              value:
+                error: INVALID_RANGE
+                message: "start и end должны быть в диапазоне [0, 86400]"
+                timestamp: "2025-12-30T00:00:00Z"
+    Conflict:
+      description: Конфликт при добавлении интервала
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: INTERVAL_OVERLAP
+            message: "Интервал пересекается с существующим: 08:00:00-09:00:00 (Работа)"
+            timestamp: "2025-12-30T00:00:00Z"
+    InternalServerError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: INTERNAL_SERVER_ERROR
+            message: "Произошла внутренняя ошибка сервера"
+            timestamp: "2025-12-30T00:00:00Z"

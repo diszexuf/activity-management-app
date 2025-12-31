@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: diszexuf
+      changes:
+        - sqlFile:
+            path: init.sql
+            relativeToChangelogFile: true
+            stripComments: true
+            splitStatements: true

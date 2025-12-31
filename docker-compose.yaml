@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16-bullseye
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: intervals_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+volumes:
+  postgres_data:
+
+networks:
+  intervals-network:
+    driver: bridge
