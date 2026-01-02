@@ -55,3 +55,5 @@ HELP.md
 /nbbuild/
 /nbdist/
 /.nb-gradle/
+
+/activity-management-frontend/openapitools.json

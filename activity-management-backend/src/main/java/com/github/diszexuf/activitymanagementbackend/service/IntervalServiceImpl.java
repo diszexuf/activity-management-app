@@ -6,10 +6,13 @@ import com.github.diszexuf.activitymanagementbackend.mapper.IntervalMapper;
 import com.github.diszexuf.activitymanagementbackend.model.ActivityType;
 import com.github.diszexuf.activitymanagementbackend.model.Interval;
 import com.github.diszexuf.activitymanagementbackend.repository.IntervalRepository;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.model.CreateIntervalRequest;
 import org.openapitools.model.IntervalResponse;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +22,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Transactional(readOnly = true)
 public class IntervalServiceImpl implements IntervalService {
 
-    private final IntervalRepository intervalRepository;
-    private final IntervalMapper intervalMapper;
+    IntervalRepository intervalRepository;
+    IntervalMapper intervalMapper;
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
@@ -55,10 +59,10 @@ public class IntervalServiceImpl implements IntervalService {
     }
 
     @Override
-    public List<IntervalResponse> getAllIntervals() {
+    public List<IntervalResponse> getAllIntervals(Pageable pageable) {
         log.info("Получение всех интервалов");
 
-        List<Interval> intervals = intervalRepository.findAll();
+        List<Interval> intervals = intervalRepository.findAll(pageable).getContent();
 
         log.info("Найдено {} интервалов", intervals.size());
 

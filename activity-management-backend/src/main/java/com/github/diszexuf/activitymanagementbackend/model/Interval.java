@@ -2,6 +2,7 @@ package com.github.diszexuf.activitymanagementbackend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -11,26 +12,27 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "intervals")
 public class Interval {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
-    private UUID id;
+    UUID id;
 
     @Column(name = "start", updatable = false, nullable = false)
-    private Integer start;
+    Integer start;
 
     @Column(name = "\"end\"", updatable = false, nullable = false)
-    private Integer end;
+    Integer end;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", updatable = false, nullable = false)
-    private ActivityType type;
+    ActivityType type;
 
     @Column(name = "created_at", updatable = false, nullable = false)
-    private OffsetDateTime createdAt;
+    OffsetDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
