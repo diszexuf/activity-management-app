@@ -1,5 +1,5 @@
 <script setup>
-import {ref, computed} from 'vue'
+import {ref, computed, watch} from 'vue'
 
 const props = defineProps({
   open: Boolean,
@@ -9,9 +9,10 @@ const props = defineProps({
 
 const emit = defineEmits(['submit', 'update:open'])
 
+const formRef = ref(null)
 const form = ref({
-  start: 0,
-  end: 0,
+  start: null,
+  end: null,
   type: ''
 })
 
@@ -20,32 +21,51 @@ const activityTypes = [
   {title: 'Перерыв', value: 'BREAK'}
 ]
 
-const isValid = computed(() => {
-  const {start, end, type} = form.value
-  return (
-      start < end &&
-      start >= 0 &&
-      end <= 86400 &&
-      type !== ''
-  )
-})
+const startRules = [
+  v => v !== null && v !== '' || 'Обязательное поле',
+  v => Number.isInteger(Number(v)) || 'Должно быть целым числом',
+  v => v >= 0 || 'Минимум 0',
+  v => v <= 86400 || 'Максимум 86400',
+  v => {
+    if (form.value.end !== null && form.value.end !== '') {
+      return v < form.value.end || 'Начало должно быть меньше конца'
+    }
+    return true
+  }
+]
 
-const validationErrors = computed(() => {
-  const errors = []
-  if (form.value.start >= form.value.end) {
-    errors.push('Начало должно быть раньше конца')
+const endRules = [
+  v => v !== null && v !== '' || 'Обязательное поле',
+  v => Number.isInteger(Number(v)) || 'Должно быть целым числом',
+  v => v >= 0 || 'Минимум 0',
+  v => v <= 86400 || 'Максимум 86400',
+  v => {
+    if (form.value.start !== null && form.value.start !== '') {
+      return v > form.value.start || 'Конец должен быть больше начала'
+    }
+    return true
   }
-  if (form.value.start < 0 || form.value.end > 86400) {
-    errors.push('Время должно быть от 0 до 86400 секунд')
-  }
-  if (!form.value.type) {
-    errors.push('Выберите тип активности')
-  }
-  return errors
-})
+]
 
-const submit = () => {
-  if (!isValid.value) return
+const typeRules = [
+  v => !!v || 'Выберите тип активности'
+]
+
+const formatSeconds = (seconds) => {
+  if (seconds === null || seconds === '') return ''
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+const startTimeFormatted = computed(() => formatSeconds(form.value.start))
+const endTimeFormatted = computed(() => formatSeconds(form.value.end))
+
+const submit = async () => {
+  const {valid} = await formRef.value.validate()
+
+  if (!valid) return
 
   emit('submit', {
     start: Number(form.value.start),
@@ -55,7 +75,12 @@ const submit = () => {
 }
 
 const reset = () => {
-  form.value = {start: 0, end: 0, type: ''}
+  form.value = {
+    start: null,
+    end: null,
+    type: ''
+  }
+  formRef.value?.resetValidation()
 }
 
 const close = () => {
@@ -64,23 +89,27 @@ const close = () => {
 }
 
 defineExpose({reset})
+
+watch(() => props.open, (isOpen) => {
+  if (!isOpen) {
+    reset()
+  }
+})
 </script>
 
 <template>
   <v-dialog
       :model-value="open"
-      max-width="500"
+      max-width="600"
       @update:model-value="$emit('update:open', $event)"
-      @after-leave="reset"
+      persistent
   >
     <template #activator="{ props: activatorProps }">
       <slot name="activator" :props="activatorProps">
         <v-btn
             v-bind="activatorProps"
             color="primary"
-            variant="outlined"
             prepend-icon="mdi-plus"
-            class="mb-4"
         >
           Добавить интервал
         </v-btn>
@@ -88,7 +117,9 @@ defineExpose({reset})
     </template>
 
     <v-card :loading="loading">
-      <v-card-title>Добавление активности</v-card-title>
+      <v-card-title class="text-h5">
+        Добавление активности
+      </v-card-title>
 
       <v-card-text>
         <v-alert
@@ -96,38 +127,30 @@ defineExpose({reset})
             type="error"
             variant="tonal"
             class="mb-4"
+            closable
         >
           {{ error }}
         </v-alert>
 
-        <v-alert
-            v-if="validationErrors.length > 0"
-            type="warning"
-            variant="tonal"
-            class="mb-4"
-        >
-          <ul class="mb-0 pl-4">
-            <li v-for="err in validationErrors" :key="err">
-              {{ err }}
-            </li>
-          </ul>
-        </v-alert>
-
-        <v-form @submit.prevent="submit">
-          <v-number-input
-              v-model="form.start"
+        <v-form ref="formRef" @submit.prevent="submit">
+          <v-text-field
+              v-model.number="form.start"
               label="Начало (секунды)"
-              :min="0"
-              :max="86400"
-              class="mb-3"
+              type="number"
+              :rules="startRules"
+              :hint="startTimeFormatted ? `Время: ${startTimeFormatted}` : 'От 0 до 86400 секунд'"
+              persistent-hint
+              class="mb-2"
           />
 
-          <v-number-input
-              v-model="form.end"
+          <v-text-field
+              v-model.number="form.end"
               label="Конец (секунды)"
-              :min="0"
-              :max="86400"
-              class="mb-3"
+              type="number"
+              :rules="endRules"
+              :hint="endTimeFormatted ? `Время: ${endTimeFormatted}` : 'От 0 до 86400 секунд'"
+              persistent-hint
+              class="mb-2"
           />
 
           <v-select
@@ -136,15 +159,28 @@ defineExpose({reset})
               item-title="title"
               item-value="value"
               label="Тип активности"
+              :rules="typeRules"
+              class="mb-2"
           />
         </v-form>
       </v-card-text>
 
       <v-card-actions>
         <v-spacer/>
-        <slot name="actions" :submit="submit" :close="close" :isValid="isValid">
-          <v-btn @click="close" color="grey" variant="text">Отмена</v-btn>
-          <v-btn @click="submit" :disabled="!isValid" color="primary" variant="flat">Добавить</v-btn>
+        <slot name="actions" :submit="submit" :close="close">
+          <v-btn
+              @click="close"
+              variant="text"
+              :disabled="loading">
+            Отмена
+          </v-btn>
+          <v-btn
+              @click="submit"
+              color="primary"
+              variant="flat"
+              :loading="loading">
+            Добавить
+          </v-btn>
         </slot>
       </v-card-actions>
     </v-card>

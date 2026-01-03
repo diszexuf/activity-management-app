@@ -12,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.model.CreateIntervalRequest;
 import org.openapitools.model.IntervalResponse;
+import org.openapitools.model.IntervalsListResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -59,14 +60,17 @@ public class IntervalServiceImpl implements IntervalService {
     }
 
     @Override
-    public List<IntervalResponse> getAllIntervals(Pageable pageable) {
+    public IntervalsListResponse getAllIntervals(Pageable pageable) {
         log.info("Получение всех интервалов");
 
         List<Interval> intervals = intervalRepository.findAll(pageable).getContent();
 
         log.info("Найдено {} интервалов", intervals.size());
+        IntervalsListResponse intervalsListResponse = new IntervalsListResponse();
+        intervalsListResponse.intervals(intervalMapper.mapToDtos(intervals));
+        intervalsListResponse.totalElements(intervalRepository.count());
 
-        return intervalMapper.mapToDtos(intervals);
+        return intervalsListResponse;
     }
 
     private boolean hasOverlaps(Integer start, Integer end) {

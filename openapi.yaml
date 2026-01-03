@@ -54,16 +54,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/IntervalsListResponse'
               example:
-                - id: 1
-                  start: 20000
-                  end: 22000
-                  type: BREAK
-                  createdAt: "2025-12-30T00:00:00Z"
-                - id: 2
-                  start: 30000
-                  end: 32000
-                  type: WORK
-                  createdAt: "2025-12-30T02:00:00Z"
+                intervals:
+                  - id: 1
+                    start: 20000
+                    end: 22000
+                    type: BREAK
+                    createdAt: "2025-12-30T00:00:00Z"
+                  - id: 2
+                    start: 30000
+                    end: 32000
+                    type: WORK
+                    createdAt: "2025-12-30T02:00:00Z"
+                totalElements: 27
         '500':
           $ref: '#/components/responses/InternalServerError'
     post:
@@ -158,9 +160,17 @@ components:
           example: "2025-12-30T00:00:00Z"
       required: [id, start, end, type, createdAt]
     IntervalsListResponse:
-      type: array
-      items:
-        $ref: '#/components/schemas/IntervalResponse'
+      properties:
+        intervals:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntervalResponse'
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+          default: 0
+          description: Общее количество интервалов всего
     ErrorResponse:
       type: object
       properties:

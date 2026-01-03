@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.openapitools.api.IntervalsApi;
 import org.openapitools.model.CreateIntervalRequest;
 import org.openapitools.model.IntervalResponse;
+import org.openapitools.model.IntervalsListResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -34,7 +35,7 @@ public class IntervalController implements IntervalsApi {
     }
 
     @Override
-    public ResponseEntity<List<IntervalResponse>> getAllIntervals(Integer page, Integer size, String sort) {
+    public ResponseEntity<IntervalsListResponse> getAllIntervals(Integer page, Integer size, String sort) {
         log.info("size: {}\n, page: {}\n sort: {}", size, page, sort);
 
         Pageable pageable = PageRequest.of(
@@ -44,6 +45,7 @@ public class IntervalController implements IntervalsApi {
         );
 
         return ResponseEntity.ok(intervalService.getAllIntervals(pageable));
+
     }
 
     private Sort parseSort(String sort) {
