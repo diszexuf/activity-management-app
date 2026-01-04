@@ -103,20 +103,24 @@ watch(() => props.open, (isOpen) => {
         </v-alert>
 
         <v-form ref="formRef" @submit.prevent="submit">
-          <v-text-field
+          <v-number-input
               v-model.number="form.start"
               label="Начало (секунды)"
-              type="number"
+              :min="0"
+              :max="86400"
+              :step="1"
               :rules="startRules"
               :hint="startTimeFormatted ? `Время: ${startTimeFormatted}` : 'От 0 до 86400 секунд'"
               persistent-hint
               class="mb-2"
           />
 
-          <v-text-field
+          <v-number-input
               v-model.number="form.end"
               label="Конец (секунды)"
-              type="number"
+              :min="0"
+              :max="86400"
+              :step="1"
               :rules="endRules"
               :hint="endTimeFormatted ? `Время: ${endTimeFormatted}` : 'От 0 до 86400 секунд'"
               persistent-hint
