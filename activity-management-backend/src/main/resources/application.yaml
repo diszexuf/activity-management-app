@@ -3,9 +3,9 @@ spring:
     name: activity-management-backend
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/intervals_db
-    username: user
-    password: password
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:intervals_db}
+    username: ${POSTGRES_USER:user}
+    password: ${POSTGRES_PASSWORD:password}
   jpa:
     show-sql: false
     hibernate:
@@ -31,4 +31,4 @@ management:
 
 cors:
   frontend:
-    uri: ${CORS_FRONTEND_URI:http://localhost:5173 }
+    uri: ${CORS_FRONTEND_URI:http://localhost:5173}
