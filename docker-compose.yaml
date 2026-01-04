@@ -1,4 +1,15 @@
 services:
+  frontend:
+    build:
+      context: .
+      dockerfile: activity-management-frontend/Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - intervals-network
+    restart: unless-stopped
   backend:
     build:
       context: .
@@ -9,13 +20,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      CORS_FRONTEND_URI: ${CORS_FRONTEND_URI:-http:localhost:3000}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - intervals-network
     restart: unless-stopped
-
   postgres:
     image: postgres:16-bullseye
     ports:
