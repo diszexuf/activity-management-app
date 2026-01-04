@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.OffsetDateTime;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
@@ -45,9 +46,13 @@ public class GlobalExceptionHandler {
         log.error("Ошибка валидации: {}", exception.getMessage());
 
         ErrorResponse errorResponse = new ErrorResponse();
-
+        String message = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .collect(Collectors.joining(", "));
         errorResponse.setError("VALIDATION_ERROR");
-        errorResponse.setMessage(exception.getMessage());
+        errorResponse.setMessage(message);
         errorResponse.setTimestamp(OffsetDateTime.now().toString());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
@@ -60,7 +65,7 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse();
 
         errorResponse.setError("INTERNAL_SERVER_ERROR");
-        errorResponse.setMessage(exception.getMessage());
+        errorResponse.setMessage("Произошла внутрення ошибка сервера");
         errorResponse.setTimestamp(OffsetDateTime.now().toString());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);

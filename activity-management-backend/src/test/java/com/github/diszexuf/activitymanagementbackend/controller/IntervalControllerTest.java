@@ -230,42 +230,6 @@ class IntervalControllerTest {
         }
 
         @Test
-        @DisplayName("Должен использовать дефолтную сортировку когда sort пустая строка")
-        void getAllIntervals_WhenSortIsEmpty_UsesDefaultSort() {
-            Integer page = 0;
-            Integer size = 10;
-            String sort = "";
-
-            IntervalsListResponse response = createListResponse(2);
-            when(intervalService.getAllIntervals(any(Pageable.class))).thenReturn(response);
-
-            intervalController.getAllIntervals(page, size, sort);
-
-            verify(intervalService).getAllIntervals(argThat(pageable ->
-                    pageable.getSort().getOrderFor("start") != null &&
-                    pageable.getSort().getOrderFor("start").getDirection() == Sort.Direction.ASC
-            ));
-        }
-
-        @Test
-        @DisplayName("Должен использовать дефолтную сортировку когда sort содержит только поле")
-        void getAllIntervals_WhenSortHasOnlyField_UsesDefaultSort() {
-            Integer page = 0;
-            Integer size = 10;
-            String sort = "start";
-
-            IntervalsListResponse response = createListResponse(2);
-            when(intervalService.getAllIntervals(any(Pageable.class))).thenReturn(response);
-
-            intervalController.getAllIntervals(page, size, sort);
-
-            verify(intervalService).getAllIntervals(argThat(pageable ->
-                    pageable.getSort().getOrderFor("start") != null &&
-                    pageable.getSort().getOrderFor("start").getDirection() == Sort.Direction.ASC
-            ));
-        }
-
-        @Test
         @DisplayName("Должен использовать сортировку по возрастанию когда указан asc")
         void getAllIntervals_WithAscSort_ReturnsAscendingOrder() {
             Integer page = 0;
@@ -289,24 +253,6 @@ class IntervalControllerTest {
             Integer page = 0;
             Integer size = 10;
             String sort = "start,desc";
-
-            IntervalsListResponse response = createListResponse(2);
-            when(intervalService.getAllIntervals(any(Pageable.class))).thenReturn(response);
-
-            intervalController.getAllIntervals(page, size, sort);
-
-            verify(intervalService).getAllIntervals(argThat(pageable ->
-                    pageable.getSort().getOrderFor("start") != null &&
-                    pageable.getSort().getOrderFor("start").getDirection() == Sort.Direction.DESC
-            ));
-        }
-
-        @Test
-        @DisplayName("Должен корректно обрабатывать сортировку с пробелами")
-        void getAllIntervals_WithSpacesInSort_TrimsAndProcesses() {
-            Integer page = 0;
-            Integer size = 10;
-            String sort = "  start  ,  desc  ";
 
             IntervalsListResponse response = createListResponse(2);
             when(intervalService.getAllIntervals(any(Pageable.class))).thenReturn(response);

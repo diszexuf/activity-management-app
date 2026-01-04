@@ -32,25 +32,12 @@ public class IntervalController implements IntervalsApi {
 
     @Override
     public ResponseEntity<IntervalsListResponse> getAllIntervals(Integer page, Integer size, String sort) {
-        log.info("size: {}\n, page: {}\n sort: {}", size, page, sort);
-
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                parseSort(sort)
-        );
-
+        Pageable pageable = PageRequest.of(page, size, parseSort(sort));
         return ResponseEntity.ok(intervalService.getAllIntervals(pageable));
-
     }
 
     private Sort parseSort(String sort) {
-        String[] parts = sort.replace(" ", "").split(",");
-
-        if (parts.length < 2) {
-            return Sort.by("start").ascending();
-        }
-
+        String[] parts = sort.split(",");
         Sort.Direction direction = "desc".equals(parts[1]) ? Sort.Direction.DESC : Sort.Direction.ASC;
 
         return Sort.by(direction, parts[0]);
