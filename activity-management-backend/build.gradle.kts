@@ -33,9 +33,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
 
     annotationProcessor("org.projectlombok:lombok")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    "developmentOnly"("org.springframework.boot:spring-boot-devtools")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

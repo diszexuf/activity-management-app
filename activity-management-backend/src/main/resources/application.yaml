@@ -24,4 +24,5 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
 cors:
-  frontend.uri: http://localhost:5173
+  frontend:
+    uri: ${CORS_FRONTEND_URI:http://localhost:5173 }

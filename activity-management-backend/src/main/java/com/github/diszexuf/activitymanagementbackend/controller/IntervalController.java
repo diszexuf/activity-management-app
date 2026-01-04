@@ -1,8 +1,6 @@
 package com.github.diszexuf.activitymanagementbackend.controller;
 
 import com.github.diszexuf.activitymanagementbackend.service.IntervalService;
-import jakarta.annotation.Nullable;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.api.IntervalsApi;
@@ -16,8 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -49,7 +45,7 @@ public class IntervalController implements IntervalsApi {
     }
 
     private Sort parseSort(String sort) {
-        String[] parts = sort.strip().split(",");
+        String[] parts = sort.replace(" ", "").split(",");
 
         if (parts.length < 2) {
             return Sort.by("start").ascending();
