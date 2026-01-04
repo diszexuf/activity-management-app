@@ -13,7 +13,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "intervals")
+@Table(name = "intervals", indexes = {
+        @Index(name = "idx_intervals_range", columnList = "start,\"end\""),
+        @Index(name = "idx_intervals_end", columnList = "\"end\""),
+        @Index(name = "idx_intervals_type", columnList = "type")
+})
 public class Interval {
 
     @Id

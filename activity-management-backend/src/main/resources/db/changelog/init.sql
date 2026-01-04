@@ -21,3 +21,7 @@ comment on column intervals."end" is 'Конец интервала в секу�
 comment on column intervals.type is 'Тип активности: WORK или BREAK';
 comment on column intervals.created_at is 'Время создания записи';
 --rollback drop table intervals
+
+--changeset diszexuf:2
+create index if not exists idx_intervals_end on intervals ("end");
+create index if not exists idx_intervals_type on intervals (type);
