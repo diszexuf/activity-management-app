@@ -1,5 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import intervalsService from '../service/intervalsService.js'
+import { ACTIVITY_TYPE_DICT, ACTIVITY_COLORS } from '../constants/activityTypes.js'
 
 const STORAGE_KEY = 'intervals_table_settings'
 
@@ -95,6 +96,10 @@ export function useIntervals() {
         dialogOpen.value = false
     }
 
+    const clearError = () => {
+        error.value = null
+    }
+
     const totalPages = computed(() => {
         if (totalElements.value <= 0 || itemsPerPage.value <= 0) return 1
         return Math.ceil(totalElements.value / itemsPerPage.value)
@@ -123,6 +128,7 @@ export function useIntervals() {
         loadItems,
         openDialog,
         closeDialog,
+        clearError,
         totalPages,
         isEmpty,
         currentRange,
@@ -143,13 +149,7 @@ export function useIntervals() {
                 sortable: true
             }
         ],
-        ACTIVITY_TYPE_DICT: {
-            'WORK': 'Работа',
-            'BREAK': 'Перерыв'
-        },
-        ACTIVITY_COLORS: {
-            'WORK': 'primary',
-            'BREAK': 'success'
-        }
+        ACTIVITY_TYPE_DICT,
+        ACTIVITY_COLORS
     }
 }

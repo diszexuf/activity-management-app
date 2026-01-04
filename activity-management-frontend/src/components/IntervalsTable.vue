@@ -1,25 +1,74 @@
 <script setup>
-import { useIntervals } from '../composable/useIntervals.js'
+import {computed} from 'vue'
+import {formatTime} from '../utils/timeFormatter.js'
 
-const {
-  intervals,
-  loading,
-  error,
-  headers,
-  totalItems,
-  page,
-  itemsPerPage,
-  sortBy,
-  loadItems,
-  ACTIVITY_TYPE_DICT,
-  ACTIVITY_COLORS,
-} = useIntervals()
+const props = defineProps({
+  intervals: {
+    type: Array,
+    required: true,
+    default: () => []
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  error: {
+    type: String,
+    default: null
+  },
+  headers: {
+    type: Array,
+    required: true
+  },
+  totalItems: {
+    type: Number,
+    default: 0
+  },
+  page: {
+    type: Number,
+    required: true
+  },
+  itemsPerPage: {
+    type: Number,
+    required: true
+  },
+  sortBy: {
+    type: Array,
+    required: true
+  },
+  activityTypeDict: {
+    type: Object,
+    required: true
+  },
+  activityColors: {
+    type: Object,
+    required: true
+  }
+})
 
-const formatTime = (seconds) => {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+const emit = defineEmits(['update:page', 'update:itemsPerPage', 'update:sortBy', 'update:options', 'update:error'])
+
+const pageModel = computed({
+  get: () => props.page,
+  set: (value) => emit('update:page', value)
+})
+
+const itemsPerPageModel = computed({
+  get: () => props.itemsPerPage,
+  set: (value) => emit('update:itemsPerPage', value)
+})
+
+const sortByModel = computed({
+  get: () => props.sortBy,
+  set: (value) => emit('update:sortBy', value)
+})
+
+const handleUpdateOptions = (options) => {
+  emit('update:options', options)
+}
+
+const handleCloseError = () => {
+  emit('update:error', null)
 }
 </script>
 
@@ -31,20 +80,20 @@ const formatTime = (seconds) => {
         variant="tonal"
         class="mb-4"
         closable
-        @click:close="error = null"
+        @click:close="handleCloseError"
     >
       {{ error }}
     </v-alert>
 
     <v-data-table-server
-        v-model:page="page"
-        v-model:items-per-page="itemsPerPage"
-        v-model:sort-by="sortBy"
+        v-model:page="pageModel"
+        v-model:items-per-page="itemsPerPageModel"
+        v-model:sort-by="sortByModel"
         :headers="headers"
         :items="intervals"
         :items-length="totalItems"
         :loading="loading"
-        @update:options="loadItems"
+        @update:options="handleUpdateOptions"
         density="comfortable"
         class="elevation-1"
         :items-per-page-options="[
@@ -63,16 +112,12 @@ const formatTime = (seconds) => {
 
       <template #item.end="{ item }">
         <span class="font-mono">{{ item.end }}</span>
-        <span class="text-caption text-grey ml-2">{{ formatTime(item.end)}}</span>
+        <span class="text-caption text-grey ml-2">{{ formatTime(item.end) }}</span>
       </template>
 
       <template #item.type="{ item }">
-        <v-chip
-            :color="ACTIVITY_COLORS[item.type] || 'grey'"
-            size="small"
-            variant="flat"
-        >
-          {{ ACTIVITY_TYPE_DICT[item.type] || item.type }}
+        <v-chip :color="activityColors[item.type] || 'grey'" size="small" variant="flat">
+          {{ activityTypeDict[item.type] || item.type }}
         </v-chip>
       </template>
 
@@ -89,7 +134,7 @@ const formatTime = (seconds) => {
       </template>
 
       <template #loading>
-        <v-skeleton-loader type="table-row@10" />
+        <v-skeleton-loader type="table-row@10"/>
       </template>
 
     </v-data-table-server>

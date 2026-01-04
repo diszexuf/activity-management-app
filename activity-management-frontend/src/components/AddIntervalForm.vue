@@ -1,5 +1,7 @@
 <script setup>
 import {ref, computed, watch} from 'vue'
+import { formatTime } from '../utils/timeFormatter.js'
+import { ACTIVITY_TYPE_OPTIONS } from '../constants/activityTypes.js'
 
 const props = defineProps({
   open: Boolean,
@@ -15,11 +17,6 @@ const form = ref({
   end: null,
   type: ''
 })
-
-const activityTypes = [
-  {title: 'Работа', value: 'WORK'},
-  {title: 'Перерыв', value: 'BREAK'}
-]
 
 const startRules = [
   v => v !== null && v !== '' || 'Обязательное поле',
@@ -51,16 +48,8 @@ const typeRules = [
   v => !!v || 'Выберите тип активности'
 ]
 
-const formatSeconds = (seconds) => {
-  if (seconds === null || seconds === '') return ''
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = seconds % 60
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-const startTimeFormatted = computed(() => formatSeconds(form.value.start))
-const endTimeFormatted = computed(() => formatSeconds(form.value.end))
+const startTimeFormatted = computed(() => formatTime(form.value.start))
+const endTimeFormatted = computed(() => formatTime(form.value.end))
 
 const submit = async () => {
   const {valid} = await formRef.value.validate()
@@ -98,37 +87,18 @@ watch(() => props.open, (isOpen) => {
 </script>
 
 <template>
-  <v-dialog
-      :model-value="open"
-      max-width="600"
-      @update:model-value="$emit('update:open', $event)"
-      persistent
-  >
+  <v-dialog :model-value="open" max-width="600" @update:model-value="$emit('update:open', $event)">
     <template #activator="{ props: activatorProps }">
       <slot name="activator" :props="activatorProps">
-        <v-btn
-            v-bind="activatorProps"
-            color="primary"
-            prepend-icon="mdi-plus"
-        >
-          Добавить интервал
-        </v-btn>
+        <v-btn v-bind="activatorProps" color="primary" prepend-icon="mdi-plus">Добавить интервал</v-btn>
       </slot>
     </template>
 
     <v-card :loading="loading">
-      <v-card-title class="text-h5">
-        Добавление активности
-      </v-card-title>
+      <v-card-title class="text-h5">Добавление активности</v-card-title>
 
       <v-card-text>
-        <v-alert
-            v-if="error"
-            type="error"
-            variant="tonal"
-            class="mb-4"
-            closable
-        >
+        <v-alert v-if="error" type="error" variant="tonal" class="mb-4" closable>
           {{ error }}
         </v-alert>
 
@@ -155,7 +125,7 @@ watch(() => props.open, (isOpen) => {
 
           <v-select
               v-model="form.type"
-              :items="activityTypes"
+              :items="ACTIVITY_TYPE_OPTIONS"
               item-title="title"
               item-value="value"
               label="Тип активности"
@@ -168,19 +138,8 @@ watch(() => props.open, (isOpen) => {
       <v-card-actions>
         <v-spacer/>
         <slot name="actions" :submit="submit" :close="close">
-          <v-btn
-              @click="close"
-              variant="text"
-              :disabled="loading">
-            Отмена
-          </v-btn>
-          <v-btn
-              @click="submit"
-              color="primary"
-              variant="flat"
-              :loading="loading">
-            Добавить
-          </v-btn>
+          <v-btn @click="close" variant="text" :disabled="loading">Отмена</v-btn>
+          <v-btn @click="submit" color="primary" variant="flat" :loading="loading">Добавить</v-btn>
         </slot>
       </v-card-actions>
     </v-card>
